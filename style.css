@@ -237,7 +237,9 @@ button {
 
 .interpretation-result textarea {
     width: 100%;
-    min-height: 500px;
+    min-height: 400px;
+    max-height: none;
+    height: auto;
     font-family: 'Georgia', serif;
     font-size: 1.05em;
     line-height: 1.7;
