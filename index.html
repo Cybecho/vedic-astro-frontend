@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>베다 점성술 서비스</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="loading-overlay" class="loading-overlay hidden">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">점성술 계산 중...</div>
+    </div>
+
+    <div class="container">
+        <header>
+            <h1>베다 점성술 서비스</h1>
+            <p>생년월일과 출생 위치를 입력하면 베다 점성술 해석을 받을 수 있습니다.</p>
+        </header>
+
+        <main>
+            <form id="astro-form" class="astro-form">
+                <fieldset>
+                    <legend>출생 정보</legend>
+                    
+                    <div class="form-group">
+                        <label for="birth-year">출생년도:</label>
+                        <input type="number" id="birth-year" name="year" min="1900" max="2030" required>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="birth-month">월:</label>
+                            <select id="birth-month" name="month" required>
+                                <option value="">선택</option>
+                                <option value="1">1월</option>
+                                <option value="2">2월</option>
+                                <option value="3">3월</option>
+                                <option value="4">4월</option>
+                                <option value="5">5월</option>
+                                <option value="6">6월</option>
+                                <option value="7">7월</option>
+                                <option value="8">8월</option>
+                                <option value="9">9월</option>
+                                <option value="10">10월</option>
+                                <option value="11">11월</option>
+                                <option value="12">12월</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="birth-day">일:</label>
+                            <input type="number" id="birth-day" name="day" min="1" max="31" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="birth-hour">시간:</label>
+                            <input type="number" id="birth-hour" name="hour" min="0" max="23" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="birth-minute">분:</label>
+                            <input type="number" id="birth-minute" name="min" min="0" max="59" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="birth-second">초:</label>
+                            <input type="number" id="birth-second" name="sec" min="0" max="59" value="0">
+                        </div>
+                    </div>
+                </fieldset>
+
+                <fieldset>
+                    <legend>출생 위치</legend>
+                    
+                    <div class="form-group">
+                        <label for="country">국가:</label>
+                        <select id="country" name="country" required>
+                            <option value="">국가 선택</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="city">도시:</label>
+                        <select id="city" name="city" required>
+                            <option value="">먼저 국가를 선택하세요</option>
+                        </select>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="timezone">시간대:</label>
+                            <input type="text" id="timezone" name="time_zone" readonly>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="dst-hour">DST 시간:</label>
+                            <input type="number" id="dst-hour" name="dst_hour" value="0" min="0" max="2">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="dst-minute">DST 분:</label>
+                            <input type="number" id="dst-minute" name="dst_min" value="0" min="0" max="59">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="latitude">위도:</label>
+                            <input type="text" id="latitude" name="latitude" readonly>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="longitude">경도:</label>
+                            <input type="text" id="longitude" name="longitude" readonly>
+                        </div>
+                    </div>
+                </fieldset>
+
+                <fieldset>
+                    <legend>추가 옵션</legend>
+                    
+                    <div class="form-group">
+                        <label for="custom-prompt">커스텀 프롬프트 (선택사항):</label>
+                        <textarea id="custom-prompt" name="custom_prompt" rows="3" 
+                                  placeholder="특별한 요청이나 질문이 있으면 입력하세요..."></textarea>
+                    </div>
+                </fieldset>
+
+                <div class="form-actions">
+                    <button type="submit" class="submit-btn">점성술 해석 받기</button>
+                    <button type="reset" class="reset-btn">초기화</button>
+                </div>
+            </form>
+
+            <section id="results-section" class="results-section hidden">
+                <h2>점성술 해석 결과</h2>
+                
+                <div class="metadata">
+                    <div class="metadata-item">
+                        <span class="label">처리 시간:</span>
+                        <span id="processing-time" class="value">-</span>
+                    </div>
+                    <div class="metadata-item">
+                        <span class="label">토큰 사용량:</span>
+                        <span id="token-usage" class="value">-</span>
+                    </div>
+                </div>
+
+                <div class="interpretation-result">
+                    <textarea id="interpretation-text" readonly rows="20" 
+                              placeholder="해석 결과가 여기에 표시됩니다..."></textarea>
+                </div>
+
+                <div class="result-actions">
+                    <button type="button" id="copy-result" class="copy-btn">결과 복사</button>
+                    <button type="button" id="new-reading" class="new-reading-btn">새로운 해석</button>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>&copy; 2025 베다 점성술 서비스. 교육 및 연구 목적으로 제작되었습니다.</p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

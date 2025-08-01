@@ -1,0 +1,72 @@
+services:
+  vedic-frontend:
+    build: .
+    ports:
+      - "80:80"
+    restart: unless-stopped
+    depends_on:
+      - vedic-api-gateway
+      - mock-gemini-api
+    networks:
+      - vedic-astro-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  vedic-api-gateway:
+    build: ../vedic-astro-api-gateway
+    environment:
+      - SERVER_IP=mock-gemini-api
+      - JYOTISH_SERVICE_IP=mockjyotish
+    restart: unless-stopped
+    depends_on:
+      - mock-gemini-api
+    networks:
+      - vedic-astro-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:9595/astro"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Mock gemini service for testing
+  mock-gemini-api:
+    image: nginx:alpine
+    networks:
+      - vedic-astro-network
+    volumes:
+      - ./mock-gemini.conf:/etc/nginx/nginx.conf
+    restart: unless-stopped
+
+  call-gemini-api:
+    build: ../call-gemini-api
+    environment:
+      - GOOGLE_AI_API_KEY=${GOOGLE_AI_API_KEY}
+    restart: unless-stopped
+    networks:
+      - vedic-astro-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:9494/interpret"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    profiles:
+      - disabled
+
+  # Mock jyotish service for testing
+  mockjyotish:
+    image: nginx:alpine
+    networks:
+      - vedic-astro-network
+    volumes:
+      - ./mock-jyotish.conf:/etc/nginx/nginx.conf
+    restart: unless-stopped
+
+networks:
+  vedic-astro-network:
+    driver: bridge

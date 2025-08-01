@@ -1,0 +1,71 @@
+version: '3.8'
+
+services:
+  vedic-frontend:
+    build: .
+    ports:
+      - "80:80"
+    restart: unless-stopped
+    depends_on:
+      - vedic-api-gateway
+    networks:
+      - vedic-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  vedic-api-gateway:
+    build: ../vedic-astro-api-gateway
+    ports:
+      - "9595:9595"
+    environment:
+      - SERVER_IP=call-gemini-api
+      - JYOTISH_SERVICE_IP=192.168.45.100
+    restart: unless-stopped
+    depends_on:
+      - call-gemini-api
+    networks:
+      - vedic-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:9595/astro"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  call-gemini-api:
+    build: ../call-gemini-api
+    ports:
+      - "9494:9494"
+    environment:
+      - GOOGLE_AI_API_KEY=${GEMINI_API_KEY}
+    restart: unless-stopped
+    networks:
+      - vedic-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:9494/interpret"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  jyotish-api:
+    build: ../jyotish-api
+    ports:
+      - "9393:9393"
+    restart: unless-stopped
+    networks:
+      - vedic-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:9393/api/calculate?latitude=37.5&longitude=127.0&year=2000&month=1&day=1&hour=0&min=0&sec=0&time_zone=%2B09%3A00&dst_hour=0&dst_min=0&nesting=0&varga=D1&infolevel=basic"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  vedic-network:
+    driver: bridge
